@@ -14,6 +14,9 @@ const flixhq = new MOVIES.FlixHQ();
 - [fetchRecentTvShows](#fetchrecenttvshows)
 - [fetchTrendingMovies](#fetchtrendingmovies)
 - [fetchTrendingTvShows](#fetchtrendingtvshows)
+- [fetchByCountry](#fetchbycountry)
+- [fetchByGenre](#fetchbygenre)
+- [fetchSpotlight](#fetchspotlight)
 
 ### search
 > Note: This method is a subclass of the [`BaseParser`](https://github.com/consumet/extensions/blob/master/src/models/base-parser.ts) class. meaning it is available across most categories.
@@ -363,4 +366,135 @@ output:
   },
   {...},
 ]
+```
+
+### fetchByCountry
+
+<h4>Parameters</h4>
+
+| Parameter       | Type     | Description                                                             |
+| --------------- | -------- | ----------------------------------------------------------------------- |
+| country         | `string` | param to filter by country. (*In this case, We're filtering by `KR`*)   |
+| page (optional) | `number` | page number (default: 1)                                                |
+
+```ts
+flixhq.fetchByCountry('KR').then(data => {
+  console.log(data);
+})
+```
+
+returns a promise which resolves into an array of movies/tv series. (*[`Promise<ISearch<IMovieResult[]>>`](https://github.com/consumet/extensions/blob/master/src/models/types.ts#L233-L241)*)\
+output:
+```js
+{
+  currentPage: 1,
+  hasNextPage: true,
+  results: [
+    {
+      id: 'tv/watch-wedding-impossible-106609',
+      title: 'Wedding Impossible',
+      url: 'https://flixhq.to/tv/watch-wedding-impossible-106609',
+      image: 'https://img.flixhq.to/xxrz/250x400/379/d1/8c/d18c569318ce319a57ba681c69b01d73/d18c569318ce319a57ba681c69b01d73.jpg',
+      season: 'SS 1',
+      latestEpisode: 'EPS 1',
+      type: 'TV Series'
+    },
+    {
+      id: 'tv/watch-a-killer-paradox-106036',
+      title: 'A Killer Paradox',
+      url: 'https://flixhq.to/tv/watch-a-killer-paradox-106036',
+      image: 'https://img.flixhq.to/xxrz/250x400/379/89/a0/89a0eede251cff2c9acf24fe64e2fe01/89a0eede251cff2c9acf24fe64e2fe01.jpg',
+      season: 'SS 1',
+      latestEpisode: 'EPS 8',
+      type: 'TV Series'
+    },
+    {...}
+  ]
+}
+```
+
+### fetchByGenre
+
+<h4>Parameters</h4>
+
+| Parameter       | Type     | Description                                                            |
+| --------------- | -------- | ---------------------------------------------------------------------- |
+| genre           | `string` | param to filter by genre. (*In this case, We're filtering by `drama`*) |
+| page (optional) | `number` | page number (default: 1)                                               |
+
+```ts
+flixhq.fetchByGenre('drama').then(data => {
+  console.log(data);
+})
+```
+
+returns a promise which resolves into an array of movies/tv series. (*[`Promise<ISearch<IMovieResult[]>>`](https://github.com/consumet/extensions/blob/master/src/models/types.ts#L233-L241)*)\
+output:
+```js
+{
+  currentPage: 1,
+  hasNextPage: true,
+  results: [
+    {
+      id: 'tv/watch-are-you-sure-112516',
+      title: 'Are You Sure?!',
+      url: 'https://flixhq.to/tv/watch-are-you-sure-112516',
+      image: 'https://img.flixhq.to/xxrz/250x400/379/56/5f/565fad67a9c9343acf4260994f565e62/565fad67a9c9343acf4260994f565e62.jpg',
+      type: 'TV Series',
+      season: 'SS 1',
+      latestEpisode: 'EPS 2'
+    },
+    {
+      id: 'movie/watch-mission-cross-112537',
+      title: 'Mission: Cross',
+      url: 'https://flixhq.to/movie/watch-mission-cross-112537',
+      image: 'https://img.flixhq.to/xxrz/250x400/379/b6/24/b62476092851e487dbf78d75162e2be9/b62476092851e487dbf78d75162e2be9.jpg',
+      type: 'Movie',
+      releaseDate: '2024',
+      duration: '100m'
+    },
+    {...}
+  ]
+}
+```
+
+### fetchSpotlight
+  
+  ```ts
+  flixhq.fetchSpotlight().then(data => {
+    console.log(data);
+  })
+  ```
+
+  returns a promise which resolves into an array of movies. (*[`Promise<ISearch<IMovieResult>>`](https://github.com/consumet/extensions/blob/master/src/models/types.ts#L328-L336)*)\
+output:
+```js
+
+{
+  results: [
+    {
+      id: 'movie/watch-saturday-night-114820',
+      title: 'Saturday Night',
+      url: 'https://flixhq.to/movie/watch-saturday-night-114820',
+      cover: 'https://f.woowoowoowoo.net/resize/1200x600/2f/1d/2f1d04e79daf8d69ab1eb4ab1574f91f/2f1d04e79daf8d69ab1eb4ab1574f91f.jpg',
+      duration: '109min',
+      rating: '7.2',
+      genres: [Array],
+      description: 'At 11:30pm on October 11, 1975, a ferocious troupe of young comedians and writers changed television forever. This is the story of what happened behind the...',
+      type: 'Movie'
+    },
+    {
+      id: 'movie/watch-megalopolis-114703',
+      title: 'Megalopolis',
+      url: 'https://flixhq.to/movie/watch-megalopolis-114703',
+      cover: 'https://f.woowoowoowoo.net/resize/1200x600/fd/d7/fdd70eab48552734313737a7e38810b5/fdd70eab48552734313737a7e38810b5.jpg',
+      duration: '138min',
+      rating: '5',
+      genres: [Array],
+      description: 'Genius artist Cesar Catilina seeks to leap the City of New Rome into a utopian, idealistic future, while his opposition, Mayor Franklyn Cicero, remains...',
+      type: 'Movie'
+    },
+    {...}
+  ]
+}
 ```

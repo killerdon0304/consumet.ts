@@ -1,5 +1,4 @@
 import { load } from 'cheerio';
-import { AxiosAdapter } from 'axios';
 
 import {
   MovieParser,
@@ -158,7 +157,7 @@ class FlixHQ extends MovieParser {
         movieInfo.episodes = [
           {
             id: uid,
-            title: movieInfo.title + ' Movie',
+            title: movieInfo.title,
             url: `${this.baseUrl}/ajax/movie/episodes/${uid}`,
           },
         ];
@@ -192,12 +191,16 @@ class FlixHQ extends MovieParser {
         case StreamingServers.VidCloud:
           return {
             headers: { Referer: serverUrl.href },
-            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true)),
+            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true, this.baseUrl)),
           };
         case StreamingServers.UpCloud:
           return {
             headers: { Referer: serverUrl.href },
-            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(serverUrl)),
+            ...(await new VidCloud(this.proxyConfig, this.adapter).extract(
+              serverUrl,
+              undefined,
+              this.baseUrl
+            )),
           };
         default:
           return {
@@ -217,13 +220,14 @@ class FlixHQ extends MovieParser {
       }
 
       const { data } = await this.client.get(
-        `${this.baseUrl}/ajax/get_link/${servers[i].url.split('.').slice(-1).shift()}`
+        `${this.baseUrl}/ajax/episode/sources/${servers[i].url.split('.').slice(-1).shift()}`
       );
 
       const serverUrl: URL = new URL(data.link);
 
       return await this.fetchEpisodeSources(serverUrl.href, mediaId, server);
     } catch (err) {
+      console.log(err, 'err');
       throw new Error((err as Error).message);
     }
   };
@@ -383,14 +387,142 @@ class FlixHQ extends MovieParser {
       throw new Error((err as Error).message);
     }
   };
+
+  fetchByCountry = async (country: string, page: number = 1): Promise<ISearch<IMovieResult>> => {
+    const result: ISearch<IMovieResult> = {
+      currentPage: page,
+      hasNextPage: false,
+      results: [],
+    };
+    const navSelector = 'div.pre-pagination:nth-child(3) > nav:nth-child(1) > ul:nth-child(1)';
+
+    try {
+      const { data } = await this.client.get(`${this.baseUrl}/country/${country}/?page=${page}`);
+      const $ = load(data);
+
+      result.hasNextPage =
+        $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('active') : false;
+
+      $('div.container > section.block_area > div.block_area-content > div.film_list-wrap > div.flw-item')
+        .each((i, el) => {
+          const resultItem: IMovieResult = {
+            id: $(el).find('div.film-poster > a').attr('href')?.slice(1) ?? '',
+            title: $(el).find('div.film-detail > h2.film-name > a').attr('title') ?? '',
+            url: `${this.baseUrl}${$(el).find('div.film-poster > a').attr('href')}`,
+            image: $(el).find('div.film-poster > img').attr('data-src'),
+            type:
+              $(el).find('div.film-detail > div.fd-infor > span.float-right').text() === 'Movie'
+                ? TvType.MOVIE
+                : TvType.TVSERIES,
+          };
+          const season = $(el).find('div.film-detail > div.fd-infor > span:nth-child(1)').text();
+          const latestEpisode =
+            $(el).find('div.film-detail > div.fd-infor > span:nth-child(3)').text() ?? null;
+          if (resultItem.type === TvType.TVSERIES) {
+            resultItem.season = season;
+            resultItem.latestEpisode = latestEpisode;
+          } else {
+            resultItem.releaseDate = season;
+            resultItem.duration = latestEpisode;
+          }
+          result.results.push(resultItem);
+        })
+        .get();
+      return result;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
+  };
+
+  fetchByGenre = async (genre: string, page: number = 1): Promise<ISearch<IMovieResult>> => {
+    const result: ISearch<IMovieResult> = {
+      currentPage: page,
+      hasNextPage: false,
+      results: [],
+    };
+    try {
+      const { data } = await this.client.get(`${this.baseUrl}/genre/${genre}?page=${page}`);
+
+      const $ = load(data);
+
+      const navSelector = 'div.pre-pagination:nth-child(3) > nav:nth-child(1) > ul:nth-child(1)';
+
+      result.hasNextPage =
+        $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('active') : false;
+
+      $('.film_list-wrap > div.flw-item')
+        .each((i, el) => {
+          const resultItem: IMovieResult = {
+            id: $(el).find('div.film-poster > a').attr('href')?.slice(1) ?? '',
+            title: $(el).find('div.film-detail > h2 > a').attr('title') ?? '',
+            url: `${this.baseUrl}${$(el).find('div.film-poster > a').attr('href')}`,
+            image: $(el).find('div.film-poster > img').attr('data-src'),
+            type:
+              $(el).find('div.film-detail > div.fd-infor > span.float-right').text() === 'Movie'
+                ? TvType.MOVIE
+                : TvType.TVSERIES,
+          };
+          const season = $(el).find('div.film-detail > div.fd-infor > span:nth-child(1)').text();
+          const latestEpisode =
+            $(el).find('div.film-detail > div.fd-infor > span:nth-child(3)').text() ?? null;
+          if (resultItem.type === TvType.TVSERIES) {
+            resultItem.season = season;
+            resultItem.latestEpisode = latestEpisode;
+          } else {
+            resultItem.releaseDate = season;
+            resultItem.duration = latestEpisode;
+          }
+          result.results.push(resultItem);
+        })
+        .get();
+
+      return result;
+    } catch (err) {
+      throw new Error((err as Error).message);
+    }
+  };
+
+  fetchSpotlight = async (): Promise<ISearch<IMovieResult>> => {
+    try {
+      const results: ISearch<IMovieResult> = { results: [] };
+      const { data } = await this.client.get(`${this.baseUrl}/home`);
+
+      const $ = load(data);
+
+      $('div.swiper-slide').each((i, el) => {
+        results.results.push({
+          id: $(el).find('a').attr('href')?.slice(1)!,
+          title: $(el).find('a').attr('title')!,
+          url: `${this.baseUrl}${$(el).find('a').attr('href')}`,
+          cover: $(el)
+            ?.css('background-image')
+            ?.replace(/url\(["']?(.+?)["']?\)/, '$1')
+            .trim(),
+          duration: $(el).find('.scd-item:contains("Duration") strong').text().trim(),
+          rating: $(el).find('.scd-item:contains("IMDB") strong').text().trim(),
+          genres: $(el)
+            .find('.scd-item:contains("Genre") .slide-genre-item')
+            .map((i, el) => $(el).text().trim())
+            .get(),
+          description: $(el).find('.sc-desc').text().trim(),
+          type: $(el).find('a').attr('href')?.split('/')[1] === 'movie' ? TvType.MOVIE : TvType.TVSERIES,
+        });
+      });
+      return results;
+    } catch (err) {
+      console.error(err);
+      throw new Error((err as Error).message);
+    }
+  };
 }
 
 // (async () => {
-//   const movie = new FlixHQ();
-//   const search = await movie.search('the flash');
+//    const movie = new FlixHQ();
+//   // const search = await movie.search('the flash');
 //   // const movieInfo = await movie.fetchEpisodeSources('1168337', 'tv/watch-vincenzo-67955');
 //   // const recentTv = await movie.fetchTrendingTvShows();
-//   console.log(search);
+//    const genre = await movie.fetchSpotlight()
+//    console.log(genre)
 // })();
 
 export default FlixHQ;

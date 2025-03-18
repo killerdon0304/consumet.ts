@@ -5,6 +5,21 @@ import Goku from './goku';
 import KissAsian from './kissasian';
 import MovieHdWatch from './movidhdwatch';
 import SmashyStream from './smashystream';
+import Turkish from './turkish123';
 import ViewAsian from './viewAsian';
+import SFlix from './sflix';
+import MultiMovies from './multimovies';
 
-export default { DramaCool, FlixHQ, Fmovies, Goku, KissAsian, MovieHdWatch, SmashyStream, ViewAsian };
+export default {
+  DramaCool,
+  FlixHQ,
+  Fmovies,
+  Goku,
+  KissAsian,
+  MovieHdWatch,
+  SmashyStream,
+  ViewAsian,
+  Turkish,
+  SFlix,
+  MultiMovies,
+};

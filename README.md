@@ -18,7 +18,7 @@ consumet.ts is a Node library which provides high-level APIs to get information 
       <img src="https://img.shields.io/discord/987492554486452315?color=7289da&label=discord&logo=discord&logoColor=7289da" alt="Discord">
     </a>
       <a href="https://github.com/consumet/consumet.ts/blob/master/LICENSE">
-    <img src="https://img.shields.io/npm/l/@consumet/extensions" alt="GitHub">
+    <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="GitHub">
   </a>
 </p>
 
@@ -61,7 +61,7 @@ const data = books.search('pride and prejudice').then(data => {
 })
 ```
 
-**Exmaple** - searching for anime using the gogoanime provider.
+**Example** - searching for anime using the gogoanime provider.
 ```ts
 import { ANIME } from "@consumet/extensions"
 
@@ -114,7 +114,7 @@ Thanks to the following people for keeping this project alive and thriving.
 [![](https://contrib.rocks/image?repo=consumet/consumet.ts)](https://github.com/consumet/consumet.ts/graphs/contributors)
 
 ### Credits
-- [Enime API](https://github.com/Enime-Project/api.enime.moe) - Used as a caching layer for the meta/anilist provider to speed up responses. 
+- [Anify API](https://github.com/Eltik/Anify) - Used as a caching layer for the meta/anilist provider to speed up responses. 
 
 ## License
-Licensed under [MIT](./LICENSE).
+Licensed under [GPL-3.0](./LICENSE).

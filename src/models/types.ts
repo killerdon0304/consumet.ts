@@ -22,11 +22,14 @@ export interface IAnimeResult {
   title: string | ITitle;
   url?: string;
   image?: string;
+  imageHash?: string;
   cover?: string;
+  coverHash?: string;
   status?: MediaStatus;
   rating?: number;
   type?: MediaFormat;
   releaseDate?: string;
+  relationType?: string;
   [x: string]: any; // other fields
 }
 
@@ -43,8 +46,10 @@ export interface ISearch<T> {
 
 export interface Trailer {
   id: string;
+  url?: string;
   site?: string;
   thumbnail?: string;
+  thumbnailHash?: string | null;
 }
 
 export interface FuzzyDate {
@@ -56,6 +61,7 @@ export interface FuzzyDate {
 export enum MediaFormat {
   TV = 'TV',
   TV_SHORT = 'TV_SHORT',
+  TV_SPECIAL = 'TV_SPECIAL',
   MOVIE = 'MOVIE',
   SPECIAL = 'SPECIAL',
   OVA = 'OVA',
@@ -64,6 +70,8 @@ export enum MediaFormat {
   MANGA = 'MANGA',
   NOVEL = 'NOVEL',
   ONE_SHOT = 'ONE_SHOT',
+  PV = 'PV',
+  COMIC = 'COMIC',
 }
 
 export interface IAnimeInfo extends IAnimeResult {
@@ -106,6 +114,7 @@ export interface IAnimeEpisodeV2 {
     season_number: number;
     title: string;
     image: string;
+    imageHash: string;
     description: string;
     releaseDate: string;
     isHD: boolean;
@@ -122,8 +131,11 @@ export interface IAnimeEpisode {
   title?: string;
   description?: string;
   isFiller?: boolean;
+  isSubbed?: boolean;
+  isDubbed?: boolean;
   url?: string;
   image?: string;
+  imageHash?: string;
   releaseDate?: string;
   [x: string]: unknown; // other fields
 }
@@ -131,6 +143,7 @@ export interface IAnimeEpisode {
 export interface IEpisodeServer {
   name: string;
   url: string;
+  [x: string]: unknown;
 }
 
 export interface IVideo {
@@ -171,10 +184,14 @@ export enum StreamingServers {
   MyCloud = 'mycloud',
   Filemoon = 'filemoon',
   VidStreaming = 'vidstreaming',
+  BuiltIn = 'builtin',
   SmashyStream = 'smashystream',
   StreamHub = 'streamhub',
   StreamWish = 'streamwish',
+  VidHide = 'vidhide',
   VidMoly = 'vidmoly',
+  Voe = 'voe',
+  MegaUp = 'megaup',
 }
 
 export enum MediaStatus {
@@ -184,6 +201,15 @@ export enum MediaStatus {
   CANCELLED = 'Cancelled',
   NOT_YET_AIRED = 'Not yet aired',
   UNKNOWN = 'Unknown',
+}
+
+export enum WatchListType {
+  WATCHING = 'watching',
+  ONHOLD = 'on-hold',
+  PLAN_TO_WATCH = 'plan to watch',
+  DROPPED = 'dropped',
+  COMPLETED = 'completed',
+  NONE = 'none',
 }
 
 export enum SubOrSub {
@@ -322,6 +348,7 @@ export interface Intro {
 export interface ISource {
   headers?: { [k: string]: string };
   intro?: Intro;
+  outro?: Intro;
   subtitles?: ISubtitle[];
   sources: IVideo[];
   download?: string;
@@ -335,6 +362,7 @@ export enum TvType {
   TVSERIES = 'TV Series',
   MOVIE = 'Movie',
   ANIME = 'Anime',
+  PEOPLE = 'People',
 }
 
 export interface IMovieEpisode {
@@ -356,6 +384,15 @@ export interface IMovieResult {
   image?: string;
   releaseDate?: string;
   type?: TvType;
+  [x: string]: unknown; // other unkown fields
+}
+
+export interface IPeopleResult {
+  id: string;
+  name: string;
+  rating?: string;
+  image?: string;
+  movies: IMovieResult[];
   [x: string]: unknown; // other unkown fields
 }
 
@@ -382,6 +419,8 @@ interface INews {
   uploadedAt: string;
   /** thumbnail image URL of the news */
   thumbnail: string;
+  /** thumbnail image blurhash code of the news */
+  thumbnailHash: string;
   /** URL of the news */
   url: string;
 }
@@ -405,6 +444,7 @@ export interface IMovieInfo extends IMovieResult {
   casts?: string[];
   tags?: string[];
   totalEpisodes?: number;
+  trailer?: Trailer;
   seasons?: { season: number; image?: string; episodes: IMovieEpisode[] }[];
   episodes?: IMovieEpisode[];
 }
@@ -459,4 +499,33 @@ export interface ProxyConfig {
    * The proxy rotation interval in milliseconds. (default: 5000)
    */
   rotateInterval?: number;
+}
+
+export interface IRoles {
+  id: string;
+  title: ITitle;
+  type?: string;
+  image: {
+    extraLarge?: string;
+    large?: string;
+    medium?: string;
+  };
+  color?: string;
+}
+
+export interface IStaff {
+  id: string;
+  name: {
+    first?: string;
+    last?: string;
+    native?: string;
+    full?: string;
+  };
+  image?: {
+    large?: string;
+    medium?: string;
+  };
+  description?: string;
+  siteUrl?: string;
+  roles?: IRoles[];
 }

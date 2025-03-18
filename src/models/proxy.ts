@@ -1,9 +1,8 @@
 import axios, { AxiosAdapter, AxiosInstance } from 'axios';
 
 import { ProxyConfig } from './types';
-import BaseProvider from './base-provider';
 
-export abstract class Proxy {
+export class Proxy {
   /**
    *
    * @param proxyConfig The proxy config (optional)
@@ -30,16 +29,18 @@ export abstract class Proxy {
         if (!this.validUrl.test(url)) throw new Error(`Proxy URL at index ${i} is invalid!`);
 
       this.rotateProxy({ ...proxyConfig, urls: proxyConfig.url });
+
+      return;
     }
 
     this.client.interceptors.request.use(config => {
       if (proxyConfig?.url) {
-        config.headers = {
-          ...config.headers,
-          'x-api-key': proxyConfig?.key ?? '',
-        };
-        config.url = `${proxyConfig.url}/${config?.url ? config?.url : ''}`;
+        config.headers.set('x-api-key', proxyConfig?.key ?? '');
+        config.url = `${proxyConfig.url}${config?.url ? config?.url : ''}`;
       }
+
+      if (config?.url?.includes('anify')) config.headers.set('User-Agent', 'consumet');
+
       return config;
     });
   }

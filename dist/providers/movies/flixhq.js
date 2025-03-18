@@ -133,7 +133,7 @@ class FlixHQ extends models_1.MovieParser {
                     movieInfo.episodes = [
                         {
                             id: uid,
-                            title: movieInfo.title + ' Movie',
+                            title: movieInfo.title,
                             url: `${this.baseUrl}/ajax/movie/episodes/${uid}`,
                         },
                     ];
@@ -160,9 +160,15 @@ class FlixHQ extends models_1.MovieParser {
                             sources: await new extractors_1.MixDrop(this.proxyConfig, this.adapter).extract(serverUrl),
                         };
                     case models_1.StreamingServers.VidCloud:
-                        return Object.assign({ headers: { Referer: serverUrl.href } }, (await new extractors_1.VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true)));
+                        return {
+                            headers: { Referer: serverUrl.href },
+                            ...(await new extractors_1.VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, true, this.baseUrl)),
+                        };
                     case models_1.StreamingServers.UpCloud:
-                        return Object.assign({ headers: { Referer: serverUrl.href } }, (await new extractors_1.VidCloud(this.proxyConfig, this.adapter).extract(serverUrl)));
+                        return {
+                            headers: { Referer: serverUrl.href },
+                            ...(await new extractors_1.VidCloud(this.proxyConfig, this.adapter).extract(serverUrl, undefined, this.baseUrl)),
+                        };
                     default:
                         return {
                             headers: { Referer: serverUrl.href },
@@ -176,11 +182,12 @@ class FlixHQ extends models_1.MovieParser {
                 if (i === -1) {
                     throw new Error(`Server ${server} not found`);
                 }
-                const { data } = await this.client.get(`${this.baseUrl}/ajax/get_link/${servers[i].url.split('.').slice(-1).shift()}`);
+                const { data } = await this.client.get(`${this.baseUrl}/ajax/episode/sources/${servers[i].url.split('.').slice(-1).shift()}`);
                 const serverUrl = new URL(data.link);
                 return await this.fetchEpisodeSources(serverUrl.href, mediaId, server);
             }
             catch (err) {
+                console.log(err, 'err');
                 throw new Error(err.message);
             }
         };
@@ -326,14 +333,130 @@ class FlixHQ extends models_1.MovieParser {
                 throw new Error(err.message);
             }
         };
+        this.fetchByCountry = async (country, page = 1) => {
+            const result = {
+                currentPage: page,
+                hasNextPage: false,
+                results: [],
+            };
+            const navSelector = 'div.pre-pagination:nth-child(3) > nav:nth-child(1) > ul:nth-child(1)';
+            try {
+                const { data } = await this.client.get(`${this.baseUrl}/country/${country}/?page=${page}`);
+                const $ = (0, cheerio_1.load)(data);
+                result.hasNextPage =
+                    $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('active') : false;
+                $('div.container > section.block_area > div.block_area-content > div.film_list-wrap > div.flw-item')
+                    .each((i, el) => {
+                    var _a, _b, _c, _d;
+                    const resultItem = {
+                        id: (_b = (_a = $(el).find('div.film-poster > a').attr('href')) === null || _a === void 0 ? void 0 : _a.slice(1)) !== null && _b !== void 0 ? _b : '',
+                        title: (_c = $(el).find('div.film-detail > h2.film-name > a').attr('title')) !== null && _c !== void 0 ? _c : '',
+                        url: `${this.baseUrl}${$(el).find('div.film-poster > a').attr('href')}`,
+                        image: $(el).find('div.film-poster > img').attr('data-src'),
+                        type: $(el).find('div.film-detail > div.fd-infor > span.float-right').text() === 'Movie'
+                            ? models_1.TvType.MOVIE
+                            : models_1.TvType.TVSERIES,
+                    };
+                    const season = $(el).find('div.film-detail > div.fd-infor > span:nth-child(1)').text();
+                    const latestEpisode = (_d = $(el).find('div.film-detail > div.fd-infor > span:nth-child(3)').text()) !== null && _d !== void 0 ? _d : null;
+                    if (resultItem.type === models_1.TvType.TVSERIES) {
+                        resultItem.season = season;
+                        resultItem.latestEpisode = latestEpisode;
+                    }
+                    else {
+                        resultItem.releaseDate = season;
+                        resultItem.duration = latestEpisode;
+                    }
+                    result.results.push(resultItem);
+                })
+                    .get();
+                return result;
+            }
+            catch (err) {
+                throw new Error(err.message);
+            }
+        };
+        this.fetchByGenre = async (genre, page = 1) => {
+            const result = {
+                currentPage: page,
+                hasNextPage: false,
+                results: [],
+            };
+            try {
+                const { data } = await this.client.get(`${this.baseUrl}/genre/${genre}?page=${page}`);
+                const $ = (0, cheerio_1.load)(data);
+                const navSelector = 'div.pre-pagination:nth-child(3) > nav:nth-child(1) > ul:nth-child(1)';
+                result.hasNextPage =
+                    $(navSelector).length > 0 ? !$(navSelector).children().last().hasClass('active') : false;
+                $('.film_list-wrap > div.flw-item')
+                    .each((i, el) => {
+                    var _a, _b, _c, _d;
+                    const resultItem = {
+                        id: (_b = (_a = $(el).find('div.film-poster > a').attr('href')) === null || _a === void 0 ? void 0 : _a.slice(1)) !== null && _b !== void 0 ? _b : '',
+                        title: (_c = $(el).find('div.film-detail > h2 > a').attr('title')) !== null && _c !== void 0 ? _c : '',
+                        url: `${this.baseUrl}${$(el).find('div.film-poster > a').attr('href')}`,
+                        image: $(el).find('div.film-poster > img').attr('data-src'),
+                        type: $(el).find('div.film-detail > div.fd-infor > span.float-right').text() === 'Movie'
+                            ? models_1.TvType.MOVIE
+                            : models_1.TvType.TVSERIES,
+                    };
+                    const season = $(el).find('div.film-detail > div.fd-infor > span:nth-child(1)').text();
+                    const latestEpisode = (_d = $(el).find('div.film-detail > div.fd-infor > span:nth-child(3)').text()) !== null && _d !== void 0 ? _d : null;
+                    if (resultItem.type === models_1.TvType.TVSERIES) {
+                        resultItem.season = season;
+                        resultItem.latestEpisode = latestEpisode;
+                    }
+                    else {
+                        resultItem.releaseDate = season;
+                        resultItem.duration = latestEpisode;
+                    }
+                    result.results.push(resultItem);
+                })
+                    .get();
+                return result;
+            }
+            catch (err) {
+                throw new Error(err.message);
+            }
+        };
+        this.fetchSpotlight = async () => {
+            try {
+                const results = { results: [] };
+                const { data } = await this.client.get(`${this.baseUrl}/home`);
+                const $ = (0, cheerio_1.load)(data);
+                $('div.swiper-slide').each((i, el) => {
+                    var _a, _b, _c, _d;
+                    results.results.push({
+                        id: (_a = $(el).find('a').attr('href')) === null || _a === void 0 ? void 0 : _a.slice(1),
+                        title: $(el).find('a').attr('title'),
+                        url: `${this.baseUrl}${$(el).find('a').attr('href')}`,
+                        cover: (_c = (_b = $(el)) === null || _b === void 0 ? void 0 : _b.css('background-image')) === null || _c === void 0 ? void 0 : _c.replace(/url\(["']?(.+?)["']?\)/, '$1').trim(),
+                        duration: $(el).find('.scd-item:contains("Duration") strong').text().trim(),
+                        rating: $(el).find('.scd-item:contains("IMDB") strong').text().trim(),
+                        genres: $(el)
+                            .find('.scd-item:contains("Genre") .slide-genre-item')
+                            .map((i, el) => $(el).text().trim())
+                            .get(),
+                        description: $(el).find('.sc-desc').text().trim(),
+                        type: ((_d = $(el).find('a').attr('href')) === null || _d === void 0 ? void 0 : _d.split('/')[1]) === 'movie' ? models_1.TvType.MOVIE : models_1.TvType.TVSERIES,
+                    });
+                });
+                return results;
+            }
+            catch (err) {
+                console.error(err);
+                throw new Error(err.message);
+            }
+        };
     }
 }
 // (async () => {
-//   const movie = new FlixHQ();
-//   const search = await movie.search('the flash');
+//    const movie = new FlixHQ();
+//   // const search = await movie.search('the flash');
 //   // const movieInfo = await movie.fetchEpisodeSources('1168337', 'tv/watch-vincenzo-67955');
 //   // const recentTv = await movie.fetchTrendingTvShows();
-//   console.log(search);
+//    const genre = await movie.fetchSpotlight()
+//    console.log(genre)
 // })();
 exports.default = FlixHQ;
 //# sourceMappingURL=flixhq.js.map

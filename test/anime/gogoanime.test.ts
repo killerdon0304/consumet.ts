@@ -1,4 +1,6 @@
+import { info } from 'console';
 import { ANIME } from '../../src/providers';
+import { StreamingServers } from '../../src/models';
 
 jest.setTimeout(120000);
 
@@ -25,6 +27,56 @@ test('returns a filled array of servers', async () => {
 });
 
 test('returns a filled object of episode sources', async () => {
-  const data = await gogoanime.fetchEpisodeSources('spy-x-family-episode-9');
+  const data = await gogoanime.fetchEpisodeSources(
+    'arifureta-shokugyou-de-sekai-saikyou-season-3-episode-1',
+    StreamingServers.GogoCDN
+  );
   expect(data.sources).not.toEqual([]);
+  expect(data.subtitles).not.toEqual([]);
+});
+
+test('returns a filled array of available genres', async () => {
+  const data = await gogoanime.fetchGenreList();
+  expect(data).not.toEqual([]);
+});
+
+test('returns a filled array of anime list', async () => {
+  const data = await gogoanime.fetchAnimeList();
+  expect(data).not.toEqual([]);
+
+  const resultSample = data.results[0];
+  expect(resultSample).toHaveProperty('genres');
+  expect(resultSample).toHaveProperty('releaseDate');
+});
+
+test('returns a filled array of recent episodes', async () => {
+  const data = await gogoanime.fetchRecentEpisodes();
+  expect(data).not.toEqual([]);
+});
+
+test('returns a filled array of recent movies', async () => {
+  const data = await gogoanime.fetchRecentMovies();
+  expect(data).not.toEqual([]);
+});
+
+test('returns a filled array of popular anime', async () => {
+  const data = await gogoanime.fetchPopular();
+  expect(data).not.toEqual([]);
+});
+
+test('returns a filled array of anime list', async () => {
+  const data = await gogoanime.fetchTopAiring();
+  expect(data).not.toEqual([]);
+
+  const resultSample = data.results[0];
+  expect(resultSample).toHaveProperty('genres');
+  expect(resultSample).toHaveProperty('episodeNumber');
+  expect(resultSample).toHaveProperty('episodeId');
+});
+
+test('returns a filled array of direct download link', async () => {
+  const data = await gogoanime.fetchDirectDownloadLink(
+    'https://embtaku.pro/download?id=MjE4NTQ2&token=-uq9s5PsPto2lD8SC6NBqQ&expires=1711622781'
+  );
+  expect(data).not.toEqual([]);
 });

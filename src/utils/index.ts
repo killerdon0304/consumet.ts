@@ -5,6 +5,7 @@ import {
   MixDrop,
   Kwik,
   RapidCloud,
+  MegaCloud,
   StreamTape,
   VizCloud,
   Filemoon,
@@ -13,6 +14,7 @@ import {
   SmashyStream,
   StreamHub,
   VidMoly,
+  MegaUp,
 } from '../extractors';
 import {
   USER_AGENT,
@@ -41,8 +43,10 @@ import {
   anilistAdvancedQuery,
   anilistSiteStatisticsQuery,
   anilistCharacterQuery,
+  anilistStaffInfoQuery,
 } from './queries';
 import { parsePostInfo } from './getComics';
+import getKKey from '../extractors/kisskh/kkey';
 
 export {
   USER_AGENT,
@@ -64,6 +68,7 @@ export {
   kitsuSearchQuery,
   range,
   RapidCloud,
+  MegaCloud,
   StreamTape,
   VizCloud,
   anilistTrendingQuery,
@@ -72,6 +77,7 @@ export {
   anilistGenresQuery,
   anilistAdvancedQuery,
   anilistSiteStatisticsQuery,
+  anilistStaffInfoQuery,
   Filemoon,
   anilistCharacterQuery,
   getDays,
@@ -84,4 +90,6 @@ export {
   substringBefore,
   compareTwoStrings,
   VidMoly,
+  getKKey,
+  MegaUp,
 };

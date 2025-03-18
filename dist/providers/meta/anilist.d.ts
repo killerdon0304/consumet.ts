@@ -1,5 +1,5 @@
 import { AxiosAdapter } from 'axios';
-import { AnimeParser, ISearch, IAnimeInfo, IAnimeResult, ISource, IAnimeEpisode, IEpisodeServer, Genres, MangaParser, IMangaChapterPage, IMangaInfo, IMangaResult, ProxyConfig } from '../../models';
+import { AnimeParser, ISearch, IAnimeInfo, IAnimeResult, ISource, IAnimeEpisode, IEpisodeServer, Genres, MangaParser, IMangaChapterPage, IMangaInfo, IMangaResult, ProxyConfig, IStaff } from '../../models';
 declare class Anilist extends AnimeParser {
     proxyConfig?: ProxyConfig | undefined;
     readonly name = "Anilist";
@@ -9,7 +9,7 @@ declare class Anilist extends AnimeParser {
     private readonly anilistGraphqlUrl;
     private readonly kitsuGraphqlUrl;
     private readonly malSyncUrl;
-    private readonly enimeUrl;
+    private readonly anifyUrl;
     provider: AnimeParser;
     /**
      * This class maps anilist to kitsu with any other anime provider.
@@ -18,7 +18,7 @@ declare class Anilist extends AnimeParser {
      * @param proxyConfig proxy config (optional)
      * @param adapter axios adapter (optional)
      */
-    constructor(provider?: AnimeParser, proxyConfig?: ProxyConfig | undefined, adapter?: AxiosAdapter);
+    constructor(provider?: AnimeParser, proxyConfig?: ProxyConfig | undefined, adapter?: AxiosAdapter, customBaseURL?: string);
     /**
      * @param query Search query
      * @param page Page number (optional)
@@ -98,7 +98,7 @@ declare class Anilist extends AnimeParser {
      * @param page page number (optional)
      * @param perPage number of results per page (optional)
      */
-    fetchRecentEpisodes: (provider?: 'gogoanime' | 'zoro', page?: number, perPage?: number) => Promise<ISearch<IAnimeResult>>;
+    fetchRecentEpisodes: (provider?: "gogoanime" | "zoro", page?: number, perPage?: number) => Promise<ISearch<IAnimeResult>>;
     private fetchDefaultEpisodeList;
     /**
      * @param id anilist id
@@ -113,11 +113,11 @@ declare class Anilist extends AnimeParser {
      */
     fetchAnilistInfoById: (id: string) => Promise<IAnimeInfo>;
     /**
-     * TODO: finish this (got lazy)
+     * To get Staff details by anilistId
      * @param id staff id from anilist
      *
      */
-    fetchStaffById: (id: number) => Promise<never>;
+    fetchStaffById: (id: number) => Promise<IStaff>;
     /**
      *
      * @param id character id from anilist
@@ -134,6 +134,7 @@ declare class Anilist extends AnimeParser {
             alternativeSpoiler: any;
         };
         image: any;
+        imageHash: string;
         description: any;
         gender: any;
         dateOfBirth: {

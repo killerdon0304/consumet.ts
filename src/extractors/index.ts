@@ -7,6 +7,7 @@ import MixDrop from './mixdrop';
 import Mp4Player from './mp4player';
 import Mp4Upload from './mp4upload';
 import RapidCloud from './rapidcloud';
+import MegaCloud from './megacloud';
 import SmashyStream from './smashystream';
 import StreamHub from './streamhub';
 import StreamLare from './streamlare';
@@ -16,7 +17,9 @@ import StreamWish from './streamwish';
 import VidCloud from './vidcloud';
 import VidMoly from './vidmoly';
 import VizCloud from './vizcloud';
+import VidHide from './vidhide';
 import Voe from './voe';
+import { MegaUp } from './megaup';
 
 export {
   AsianLoad,
@@ -28,6 +31,7 @@ export {
   Mp4Player,
   Mp4Upload,
   RapidCloud,
+  MegaCloud,
   SmashyStream,
   StreamHub,
   StreamLare,
@@ -37,5 +41,7 @@ export {
   VidCloud,
   VidMoly,
   VizCloud,
-  Voe
+  VidHide,
+  Voe,
+  MegaUp,
 };

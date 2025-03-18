@@ -14,8 +14,6 @@ class RapidCloud extends models_1.VideoExtractor {
         this.sources = [];
         this.fallbackKey = 'c1d17096f2ca11b7';
         this.host = 'https://rapid-cloud.co';
-        this.consumetApi = 'https://api.consumet.org';
-        this.enimeApi = 'https://api.enime.moe';
         this.extract = async (videoUrl) => {
             var _a, _b;
             const result = {
@@ -30,24 +28,12 @@ class RapidCloud extends models_1.VideoExtractor {
                     },
                 };
                 let res = null;
-                // let { data: sId } = await this.client({
-                //   method: 'GET',
-                //   url: `${this.consumetApi}/utils/rapid-cloud`,
-                //   validateStatus: status => true,
-                // });
-                // if (!sId) {
-                //   sId = await this.client({
-                //     method: 'GET',
-                //     url: `${this.enimeApi}/tool/rapid-cloud/server-id`,
-                //     validateStatus: status => true,
-                //   });
-                // }
                 res = await this.client.get(`https://${videoUrl.hostname}/embed-2/ajax/e-1/getSources?id=${id}`, options);
-                let { data: { sources, tracks, intro, encrypted }, } = res;
-                let decryptKey = await (await this.client.get('https://github.com/enimax-anime/key/blob/e6/key.txt')).data;
+                let { data: { sources, tracks, intro, outro, encrypted }, } = res;
+                let decryptKey = await (await this.client.get('https://raw.githubusercontent.com/cinemaxhq/keys/e1/key')).data;
                 decryptKey = (0, utils_1.substringBefore)((0, utils_1.substringAfter)(decryptKey, '"blob-code blob-code-inner js-file-line">'), '</td>');
                 if (!decryptKey) {
-                    decryptKey = await (await this.client.get('https://raw.githubusercontent.com/enimax-anime/key/e6/key.txt')).data;
+                    decryptKey = await (await this.client.get('https://raw.githubusercontent.com/cinemaxhq/keys/e1/key')).data;
                 }
                 if (!decryptKey)
                     decryptKey = this.fallbackKey;
@@ -55,11 +41,15 @@ class RapidCloud extends models_1.VideoExtractor {
                     if (encrypted) {
                         const sourcesArray = sources.split('');
                         let extractedKey = '';
+                        let currentIndex = 0;
                         for (const index of decryptKey) {
-                            for (let i = index[0]; i < index[1]; i++) {
-                                extractedKey += sources[i];
+                            const start = index[0] + currentIndex;
+                            const end = start + index[1];
+                            for (let i = start; i < end; i++) {
+                                extractedKey += res.data.sources[i];
                                 sourcesArray[i] = '';
                             }
+                            currentIndex += index[1];
                         }
                         decryptKey = extractedKey;
                         sources = sourcesArray.join('');
@@ -99,12 +89,8 @@ class RapidCloud extends models_1.VideoExtractor {
                         result.sources.push(...this.sources);
                     }
                 }
-                if ((intro === null || intro === void 0 ? void 0 : intro.end) > 1) {
-                    result.intro = {
-                        start: intro.start,
-                        end: intro.end,
-                    };
-                }
+                result.intro = (intro === null || intro === void 0 ? void 0 : intro.end) > 1 ? { start: intro.start, end: intro.end } : undefined;
+                result.outro = (outro === null || outro === void 0 ? void 0 : outro.end) > 1 ? { start: outro.start, end: outro.end } : undefined;
                 result.sources.push({
                     url: sources[0].file,
                     isM3U8: sources[0].file.includes('.m3u8'),
